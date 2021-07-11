@@ -638,6 +638,12 @@ html:not(.mobile) #entry-menu a.active {
   display: none !important;
 }
 
+.read-only-user .delete-file,
+.read-only-user a.rename, .read-only-user a.copy, .read-only-user a.cut, .read-only-user a.delete,
+.read-only-user .movefile, .read-only-user .copyfile {
+  display: none !important;
+}
+
 /* ============================ Media View ============================ */
 
 .pswp__container {

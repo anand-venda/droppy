@@ -103,12 +103,13 @@ db.set = function(key, value) {
   write();
 };
 
-db.addOrUpdateUser = function addOrUpdateUser(user, password, privileged) {
+db.addOrUpdateUser = function addOrUpdateUser(user, password, privileged, readOnly) {
   const salt = crypto.randomBytes(4).toString("hex");
 
   database.users[user] = {
     hash: `${getHash(password + salt + user)}$${salt}`,
-    privileged
+    privileged,
+    readOnly
   };
 
   write();

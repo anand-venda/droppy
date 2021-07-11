@@ -24,7 +24,7 @@ const cmds = {
   stop: "stop                   Stop all daemonized servers",
   config: "config                 Edit the config",
   list: "list                   List users",
-  add: "add <user> <pass> [p]  Add or update a user. Specify 'p' for privileged",
+  add: "add <user> <pass> [p]  Add or update a user. Specify 'p' for privileged. Specify 'ro' for read only user",
   del: "del <user>             Delete a user",
   build: "build                  Build client resources",
   version: "version, -v            Print version",
@@ -151,7 +151,7 @@ if (cmds[cmd]) {
     if (args.length !== 2 && args.length !== 3) printHelp();
     db = require("./server/db.js");
     db.load(() => {
-      db.addOrUpdateUser(args[0], args[1], args[2] === "p", () => {
+      db.addOrUpdateUser(args[0], args[1], args[2] === "p", args[3] === "ro", () => {
         printUsers(db.get("users"));
       });
     });

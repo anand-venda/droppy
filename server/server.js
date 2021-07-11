@@ -440,10 +440,13 @@ function onWebSocketRequest(ws, req) {
     }
 
     const vId = msg.vId;
-    const priv = Boolean((db.get("sessions")[cookie] || {}).privileged);
+    const sessionUser = db.get("sessions")[cookie];
+    const priv = Boolean((sessionUser || {}).privileged);
+    const user = db.get("users")[sessionUser.username];
 
     if (msg.type === "REQUEST_SETTINGS") {
       sendObj(sid, {type: "SETTINGS", vId, settings: {
+        readOnlyUser:user.readOnly,
         priv,
         version: pkg.version,
         dev: config.dev,
@@ -524,6 +527,7 @@ function onWebSocketRequest(ws, req) {
       });
     } else if (msg.type === "DELETE_FILE") {
       log.info(ws, null, `Deleting: ${msg.data}`);
+      if (user.readOnly) return sendError(sid, vId, "Current user doesn't have permission to delete");
       if (config.readOnly) return sendError(sid, vId, "Files are read-only");
       if (!validatePaths(msg.data, msg.type, ws, sid, vId)) return;
       filetree.del(msg.data);
@@ -605,7 +609,7 @@ function onWebSocketRequest(ws, req) {
         if (db.delUser(name)) log.info(ws, null, "Deleted user: ", magenta(name));
       } else {
         const isNew = !db.get("users")[name];
-        db.addOrUpdateUser(name, pass, msg.data.priv || false);
+        db.addOrUpdateUser(name, pass, msg.data.priv || false, msg.data.readOnly || false);
         log.info(ws, null, `${isNew ? "Added" : "Updated"} user: `, magenta(name));
       }
       sendUsers(sid);
@@ -903,7 +907,7 @@ function handlePOST(req, res) {
       if (postData.username && postData.password &&
           typeof postData.username === "string" &&
           typeof postData.password === "string") {
-        db.addOrUpdateUser(postData.username, postData.password, true);
+        db.addOrUpdateUser(postData.username, postData.password, true, false); // TODO check here
         cookies.create(req, res, postData);
         firstRun = false;
         res.statusCode = 200;

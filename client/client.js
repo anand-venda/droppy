@@ -410,6 +410,11 @@ function openSocket() {
         if (droppy.readOnly) {
           document.documentElement.classList.add("readonly");
         }
+        if (droppy.readOnlyUser) {
+          document.documentElement.classList.add("read-only-user");
+        } else {
+          document.documentElement.classList.remove("read-only-user")
+        }
         if (droppy.public) {
           document.documentElement.classList.add("public");
         }
@@ -2193,10 +2198,12 @@ function updateUsers(userlist) {
     const pass = prompt("Password?");
     if (!pass) return;
     const priv = window.confirm("Privileged User?");
+    const readOnly = window.confirm("Read Only User");
     sendMessage(null, "UPDATE_USER", {
       name: user,
       pass,
-      priv
+      priv,
+      readOnly
     });
   });
   box.find(".delete-user").off("click").on("click", function(event) {
@@ -2469,7 +2476,7 @@ function initAudio(view) {
     event.stopPropagation();
   });
 
-  function setVolume(view, volume) {
+  function setVolume(volume) {
     if (volume > 1) volume = 1;
     if (volume < 0) volume = 0;
     player.volume = volume;
